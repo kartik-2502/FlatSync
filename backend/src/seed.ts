@@ -4,8 +4,57 @@ import { calculateCompatibility } from './services/aiService';
 
 const prisma = new PrismaClient();
 
+// List of cities from all states and UTs of India
+const SEED_CITIES = [
+  'Visakhapatnam, Andhra Pradesh', 'Vijayawada, Andhra Pradesh', 'Amaravati, Andhra Pradesh', 'Tirupati, Andhra Pradesh',
+  'Itanagar, Arunachal Pradesh',
+  'Guwahati, Assam', 'Dispur, Assam', 'Dibrugarh, Assam',
+  'Patna, Bihar', 'Gaya, Bihar', 'Muzaffarpur, Bihar',
+  'Raipur, Chhattisgarh', 'Bhilai, Chhattisgarh',
+  'Panaji, Goa', 'Margao, Goa',
+  'Ahmedabad, Gujarat', 'Surat, Gujarat', 'Vadodara, Gujarat', 'Gandhinagar, Gujarat',
+  'Gurugram, Haryana', 'Faridabad, Haryana', 'Panipat, Haryana',
+  'Shimla, Himachal Pradesh', 'Dharamshala, Himachal Pradesh',
+  'Ranchi, Jharkhand', 'Jamshedpur, Jharkhand', 'Dhanbad, Jharkhand',
+  'Bengaluru, Karnataka', 'Mysuru, Karnataka', 'Hubli, Karnataka', 'Mangaluru, Karnataka',
+  'Kochi, Kerala', 'Thiruvananthapuram, Kerala', 'Kozhikode, Kerala',
+  'Indore, Madhya Pradesh', 'Bhopal, Madhya Pradesh', 'Gwalior, Madhya Pradesh', 'Jabalpur, Madhya Pradesh',
+  'Mumbai, Maharashtra', 'Pune, Maharashtra', 'Nagpur, Maharashtra', 'Thane, Maharashtra', 'Nashik, Maharashtra',
+  'Imphal, Manipur',
+  'Shillong, Meghalaya',
+  'Aizawl, Mizoram',
+  'Kohima, Nagaland', 'Dimapur, Nagaland',
+  'Bhubaneswar, Odisha', 'Cuttack, Odisha', 'Rourkela, Odisha',
+  'Ludhiana, Punjab', 'Amritsar, Punjab', 'Jalandhar, Punjab', 'Patiala, Punjab',
+  'Jaipur, Rajasthan', 'Jodhpur, Rajasthan', 'Udaipur, Rajasthan', 'Kota, Rajasthan',
+  'Gangtok, Sikkim',
+  'Chennai, Tamil Nadu', 'Coimbatore, Tamil Nadu', 'Madurai, Tamil Nadu', 'Salem, Tamil Nadu',
+  'Hyderabad, Telangana', 'Warangal, Telangana', 'Nizamabad, Telangana',
+  'Agartala, Tripura',
+  'Lucknow, Uttar Pradesh', 'Noida, Uttar Pradesh', 'Kanpur, Uttar Pradesh', 'Varanasi, Uttar Pradesh', 'Ghaziabad, Uttar Pradesh', 'Agra, Uttar Pradesh',
+  'Dehradun, Uttarakhand', 'Haridwar, Uttarakhand', 'Nainital, Uttarakhand',
+  'Kolkata, West Bengal', 'Siliguri, West Bengal', 'Darjeeling, West Bengal', 'Howrah, West Bengal',
+  'Delhi, Delhi UT', 'Srinagar, Jammu & Kashmir', 'Jammu, Jammu & Kashmir', 'Puducherry, Puducherry UT', 'Chandigarh, Chandigarh UT'
+];
+
+const ROOM_PHOTOS = [
+  'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1560185127-6a2806647f81?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1527030280862-64139fbe04ca?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1502672023488-70e25813eb80?auto=format&fit=crop&w=800&q=80'
+];
+
+const ROOM_TYPES = ['Studio', 'Single', 'Shared', 'Apartment'];
+const FURNISHING_STATUSES = ['Furnished', 'Semi-Furnished', 'Unfurnished'];
+
 async function main() {
-  console.log('🌱 Starting database seeding with Indian city data & chatbot listing...');
+  console.log('🌱 Starting comprehensive database seeding...');
 
   // Clean old data in correct order
   await prisma.chatMessage.deleteMany({});
@@ -18,8 +67,8 @@ async function main() {
   const passwordHash = await bcrypt.hash('password123', 10);
   const adminPasswordHash = await bcrypt.hash('AdminPassword123!', 10);
 
-  // 1. Create Users
-  const admin = await prisma.user.create({
+  // Create Admins & Chatbot
+  await prisma.user.create({
     data: {
       email: 'admin@rentfinder.com',
       password: adminPasswordHash,
@@ -28,7 +77,6 @@ async function main() {
     }
   });
 
-  // Seed the chatbot user (ID 999)
   const chatbot = await prisma.user.create({
     data: {
       id: 999,
@@ -39,6 +87,7 @@ async function main() {
     }
   });
 
+  // Create Owners
   const alice = await prisma.user.create({
     data: {
       email: 'owner1@rentfinder.com',
@@ -57,6 +106,7 @@ async function main() {
     }
   });
 
+  // Create Tenants
   const charlie = await prisma.user.create({
     data: {
       email: 'tenant1@rentfinder.com',
@@ -77,7 +127,7 @@ async function main() {
 
   console.log('✅ Users & Bot created.');
 
-  // 2. Create Chatbot dummy RoomListing (ID 999) to satisfy foreign key constraints
+  // Create Chatbot dummy RoomListing (ID 999)
   await prisma.roomListing.create({
     data: {
       id: 999,
@@ -92,7 +142,7 @@ async function main() {
   });
   console.log('✅ Chatbot support listing created.');
 
-  // 3. Create Tenant Profiles (Indian state format)
+  // Create Tenant Profiles
   const profileCharlie = await prisma.tenantProfile.create({
     data: {
       tenantId: charlie.id,
@@ -113,70 +163,62 @@ async function main() {
     }
   });
 
-  console.log('✅ Tenant profiles created (Mumbai, Bengaluru).');
+  console.log('✅ Tenant profiles created.');
 
-  // 4. Create Listings (Indian state format)
-  const listingsData = [
-    {
-      ownerId: alice.id,
-      location: 'Mumbai, Maharashtra',
-      rent: 42000,
-      availableFrom: '2026-07-15',
-      roomType: 'Studio',
-      furnishingStatus: 'Furnished',
-      photos: JSON.stringify([
-        'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80'
-      ])
-    },
-    {
-      ownerId: alice.id,
-      location: 'Bengaluru, Karnataka',
-      rent: 28000,
-      availableFrom: '2026-08-01',
-      roomType: 'Single',
-      furnishingStatus: 'Semi-Furnished',
-      photos: JSON.stringify([
-        'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80'
-      ])
-    },
-    {
-      ownerId: bob.id,
-      location: 'Pune, Maharashtra',
-      rent: 22000,
-      availableFrom: '2026-08-10',
-      roomType: 'Shared',
-      furnishingStatus: 'Unfurnished',
-      photos: JSON.stringify([
-        'https://images.unsplash.com/photo-1560185127-6a2806647f81?auto=format&fit=crop&w=800&q=80'
-      ])
-    },
-    {
-      ownerId: bob.id,
-      location: 'Delhi, Delhi UT',
-      rent: 35000,
-      availableFrom: '2026-07-20',
-      roomType: 'Apartment',
-      furnishingStatus: 'Furnished',
-      photos: JSON.stringify([
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80'
-      ])
-    }
-  ];
+  // Generate 2 listings for every single city in India list (160+ total listings)
+  console.log(`📦 Generating room listings for ${SEED_CITIES.length} Indian cities (2 flats per city)...`);
+  
+  const listings: any[] = [];
+  let listingIdCounter = 1;
 
-  const listings = [];
-  for (const data of listingsData) {
-    const listing = await prisma.roomListing.create({ data });
-    listings.push(listing);
+  for (const city of SEED_CITIES) {
+    // Flat 1 (assigned to Alice)
+    const rent1 = 12000 + Math.floor(Math.random() * 38000); // 12,000 to 50,000
+    const type1 = ROOM_TYPES[Math.floor(Math.random() * ROOM_TYPES.length)];
+    const furn1 = FURNISHING_STATUSES[Math.floor(Math.random() * FURNISHING_STATUSES.length)];
+    const photo1 = ROOM_PHOTOS[(listingIdCounter) % ROOM_PHOTOS.length];
+    
+    const l1 = await prisma.roomListing.create({
+      data: {
+        id: listingIdCounter++,
+        ownerId: alice.id,
+        location: city,
+        rent: rent1,
+        availableFrom: '2026-08-01',
+        roomType: type1,
+        furnishingStatus: furn1,
+        photos: JSON.stringify([photo1])
+      }
+    });
+    listings.push(l1);
+
+    // Flat 2 (assigned to Bob)
+    const rent2 = 15000 + Math.floor(Math.random() * 55000); // 15,000 to 70,000
+    const type2 = ROOM_TYPES[Math.floor(Math.random() * ROOM_TYPES.length)];
+    const furn2 = FURNISHING_STATUSES[Math.floor(Math.random() * FURNISHING_STATUSES.length)];
+    const photo2 = ROOM_PHOTOS[(listingIdCounter) % ROOM_PHOTOS.length];
+
+    const l2 = await prisma.roomListing.create({
+      data: {
+        id: listingIdCounter++,
+        ownerId: bob.id,
+        location: city,
+        rent: rent2,
+        availableFrom: '2026-08-15',
+        roomType: type2,
+        furnishingStatus: furn2,
+        photos: JSON.stringify([photo2])
+      }
+    });
+    listings.push(l2);
   }
 
-  console.log('✅ Room listings created.');
+  console.log(`✅ ${listings.length} Room listings created.`);
 
-  // 5. Compute and seed compatibility scores
+  // Compute and seed compatibility scores
   const profiles = [profileCharlie, profileDavid];
   
-  console.log('🧠 Precomputing and saving compatibility scores...');
+  console.log('🧠 Precomputing compatibility scores (rule-based fallback mode to prevent API timeouts)...');
   for (const profile of profiles) {
     for (const listing of listings) {
       const result = await calculateCompatibility(profile, listing);
