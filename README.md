@@ -1,5 +1,22 @@
 # FlatSync
 
+## 🌐 Live Deployed Application
+* **Vercel Frontend Website**: [https://flat-sync.vercel.app](https://flat-sync.vercel.app)
+* **Render Backend API**: [https://flatsync-kxsy.onrender.com](https://flatsync-kxsy.onrender.com)
+
+### 🔑 Seeded Demo Credentials
+Use these pre-configured user profiles to instantly test matching, chat, and Indian cities search:
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Tenant (Charlie)** | `tenant1@rentfinder.com` | `password123` |
+| **Tenant (David)** | `tenant2@rentfinder.com` | `password123` |
+| **Owner (Alice)** | `owner1@rentfinder.com` | `password123` |
+| **Owner (Bob)** | `owner2@rentfinder.com` | `password123` |
+| **Administrator** | `admin@rentfinder.com` | `AdminPassword123!` |
+
+*(You can also register a fresh account directly to try the dynamic Indian states city autocomplete and matching in Rupees).*
+
 FlatSync is a premium, real-time matching platform for room rentals and flatmate searching. It matches owners who list rooms with tenants looking for rooms. It computes compatibility scores based on budget and location criteria using the Gemini AI API, fallback rule-based calculations, real-time chat via WebSockets (Socket.io), and Nodemailer alerts.
 
 ## 🚀 Features
