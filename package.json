@@ -1,0 +1,16 @@
+{
+  "name": "flatsync",
+  "version": "1.0.0",
+  "description": "FlatSync Platform with AI compatibility scoring",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "db:migrate": "npm run db:migrate --prefix backend",
+    "db:seed": "npm run db:seed --prefix backend",
+    "zip": "node zip-project.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

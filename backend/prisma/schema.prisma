@@ -1,0 +1,101 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              Int              @id @default(autoincrement())
+  email           String           @unique
+  password        String
+  name            String
+  role            String           // "TENANT", "OWNER", "ADMIN"
+  createdAt       DateTime         @default(now())
+  
+  // Relations
+  listings        RoomListing[]    @relation("UserListings")
+  tenantProfile   TenantProfile?   @relation("UserTenantProfile")
+  sentInterests   InterestRequest[] @relation("TenantInterests")
+  sentMessages    ChatMessage[]    @relation("SentMessages")
+  receivedMessages ChatMessage[]   @relation("ReceivedMessages")
+}
+
+model RoomListing {
+  id               Int                  @id @default(autoincrement())
+  ownerId          Int
+  location         String
+  rent             Float
+  availableFrom    String
+  roomType         String               // "Single", "Shared", "Studio", "Apartment"
+  furnishingStatus String               // "Furnished", "Semi-Furnished", "Unfurnished"
+  photos           String               // JSON array string of photo paths or default stock links
+  isFilled         Boolean              @default(false)
+  createdAt        DateTime             @default(now())
+
+  // Relations
+  owner            User                 @relation("UserListings", fields: [ownerId], references: [id], onDelete: Cascade)
+  compatibilities  CompatibilityScore[] @relation("ListingCompatibilities")
+  interests        InterestRequest[]    @relation("ListingInterests")
+  messages         ChatMessage[]        @relation("ListingMessages")
+}
+
+model TenantProfile {
+  id                Int                  @id @default(autoincrement())
+  tenantId          Int                  @unique
+  preferredLocation String
+  budgetMin         Float
+  budgetMax         Float
+  moveInDate        String
+  createdAt         DateTime             @default(now())
+
+  // Relations
+  tenant            User                 @relation("UserTenantProfile", fields: [tenantId], references: [id], onDelete: Cascade)
+  compatibilities   CompatibilityScore[] @relation("TenantCompatibilities")
+}
+
+model CompatibilityScore {
+  id              Int           @id @default(autoincrement())
+  tenantProfileId Int
+  listingId       Int
+  score           Int           // 0 to 100
+  explanation     String
+  method          String        // "LLM" or "RULE"
+  createdAt       DateTime      @default(now())
+
+  // Relations
+  tenantProfile   TenantProfile @relation("TenantCompatibilities", fields: [tenantProfileId], references: [id], onDelete: Cascade)
+  listing         RoomListing   @relation("ListingCompatibilities", fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantProfileId, listingId])
+}
+
+model InterestRequest {
+  id        Int         @id @default(autoincrement())
+  tenantId  Int
+  listingId Int
+  status    String      // "PENDING", "ACCEPTED", "DECLINED"
+  createdAt DateTime    @default(now())
+
+  // Relations
+  tenant    User        @relation("TenantInterests", fields: [tenantId], references: [id], onDelete: Cascade)
+  listing   RoomListing @relation("ListingInterests", fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, listingId])
+}
+
+model ChatMessage {
+  id         Int         @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  listingId  Int
+  content    String
+  createdAt  DateTime    @default(now())
+
+  // Relations
+  sender     User        @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  listing    RoomListing @relation("ListingMessages", fields: [listingId], references: [id], onDelete: Cascade)
+}
