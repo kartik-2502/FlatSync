@@ -101,7 +101,10 @@ export default function OwnerDashboard({ token, user }: OwnerDashboardProps) {
   // Sockets for Chat
   useEffect(() => {
     if (activeSubTab === 'chat' && token) {
-      const socket = io('http://localhost:5000', {
+      const socketUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:5000' 
+        : (import.meta.env.VITE_BACKEND_URL || 'https://flatsync-backend.onrender.com');
+      const socket = io(socketUrl, {
         auth: { token }
       });
       socketRef.current = socket;

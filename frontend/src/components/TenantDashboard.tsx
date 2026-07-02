@@ -114,7 +114,10 @@ export default function TenantDashboard({ token, user, onProfileUpdate }: Tenant
   useEffect(() => {
     if (activeSubTab === 'chat' && token) {
       // Connect socket
-      const socket = io('http://localhost:5000', {
+      const socketUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:5000' 
+        : (import.meta.env.VITE_BACKEND_URL || 'https://flatsync-backend.onrender.com');
+      const socket = io(socketUrl, {
         auth: { token }
       });
       socketRef.current = socket;
